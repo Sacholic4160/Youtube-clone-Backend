@@ -1,15 +1,28 @@
  // (require ('dotenv').config({path: './.env}));   this line of code is used in previous versions so now a days we can resolve it by separating it
 import dotenv from "dotenv";
-// import express from "express"
+import express from "express"
 // import { DB_NAME}  from "./constants.js"
 import connectDB from "./db/index.js";
 
 dotenv.config({
     path:"./.env"
 })
-//const app =express();
+const app =express();
 
-connectDB();
+connectDB()
+.then(() => {
+    app.on("error",(err)=> {
+        console.log("MONGODB Connection Successfull ,but Express is not listening" ,err);
+   throw err;
+
+    })
+    app.listen(process.env.PORT || 4001,() => {
+        console.log(`Hii, my server is listening on this port number: ${process.env.PORT}`);
+    })
+})
+.catch((error) =>{
+    console.log(`MONGODB connection failed ${error}`);
+})
 
 
 

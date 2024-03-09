@@ -14,3 +14,5 @@ const connectDB = async () => {
 }
 
 export default connectDB;
+
+//Here we are using asynchronous method for connectdb so it will return promise so that we add promise in our main index.js
