@@ -15,4 +15,16 @@ app.use(express.urlencoded({extended:true, limit: "20kb"})) // this is also used
 app.use(express.static("public")) //here static means any files/pdf or anything we want to save in our local system so that we can acess it locally so in public folder it will be kept
 app.use(cookieParser())
 
+//routes import 
+import userRoute from "./routes/user.routes.js"
+
+
+//routes declaration (here we cannot use app.get because here we have to ue midlleware )
+
+app.use('/api/v1/users', userRoute);
+
+
+
+
+
 export {app};
