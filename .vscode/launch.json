@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "http:///api/v1/users",
+            "request": "launch",
+            "url": "http:///api/v1/users"
+        }
+    ]
+}
