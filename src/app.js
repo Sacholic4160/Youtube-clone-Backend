@@ -19,9 +19,9 @@ app.use(cookieParser())
 import userRoute from "./routes/user.routes.js"
 
 
-//routes declaration (here we cannot use app.get because here we have to ue midlleware )
+//routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 
-app.use('/api/v1/users', userRoute);
+app.use("/api/v1/users", userRoute);
 
 
 

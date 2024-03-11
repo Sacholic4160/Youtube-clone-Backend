@@ -3,8 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 
 const registerUser = asyncHandler( async (req,res) => {
-    res.status(200).json({
-        message : "ok"
+   await res.status(200).json({
+        message : "We are going in right direction"
     })
 })
 
