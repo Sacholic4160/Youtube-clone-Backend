@@ -17,7 +17,7 @@ app.use(express.static("public")); //here static means any files/pdf or anything
 app.use(cookieParser());
 
 //routes import
-import userRoute from "./routes/user.routes.js";
+import userRoute from "../routes/user.routes.js";
 
 //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 

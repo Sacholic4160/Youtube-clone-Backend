@@ -3,7 +3,7 @@
 import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import jwt from "jsonwebtoken";
-import { User } from "../modes/user.model";
+import { User } from "../models/user.model";
 
 export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also use underscore(_) at the place of (res)
   try {
