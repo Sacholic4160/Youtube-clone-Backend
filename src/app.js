@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"; //cookie-parser is used so that we can perform CRUD(acess or set kr pau) operaions on cookies of users browser from our server
-import userRoute from "./routes/user.route.js";
+import userRouter from "./routes/user.route.js";     //routes import
 
 const app = express();
 
@@ -21,11 +21,11 @@ app.use(cookieParser());
 
 
 //here we are giving a route so that using this route we can make requests for various methods
-app.use("/api/v1/users", userRoute);  //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
+app.use("/api/v1/users", userRouter);  //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 
 
 
- export default app;
+ export { app };
 
 
 
@@ -34,7 +34,7 @@ app.use("/api/v1/users", userRoute);  //routes declaration (here we cannot use a
  
 //   )
 //  })
-//routes import
+
 
 
 

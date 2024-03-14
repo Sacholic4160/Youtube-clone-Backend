@@ -1,12 +1,13 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
+          
+cloudinary.config({ 
+  cloud_name: 'dpox4drsw', 
+  api_key: '654613913124377', 
+  api_secret: '1OAEFB8DF2dWrHRxItcSBsiOnbk' 
+});
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     //if path does not exist then
@@ -14,14 +15,16 @@ const uploadOnCloudinary = async (localFilePath) => {
 
     //if path exist then we can move ahead
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto", //the upload method here consist of many options we can write here as one of them is the type of our file
+      resource_type: "auto"//the upload method here consist of many options we can write here as one of them is the type of our file
     });
     console.log(
       `file has been uploaded successfully on cloudinary: ${response.url}`
     );
     fs.unlinkSync(localFilePath);
     return response;
-  } catch (error) {
+
+  }
+   catch (error) {
     fs.unlinkSync(localFilePath); //remove the locally save temporary file as the upload operation got failed
     return null;
   }

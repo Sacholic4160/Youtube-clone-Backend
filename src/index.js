@@ -1,15 +1,16 @@
 // (require ('dotenv').config({path: './.env}));   this line of code is used in previous versions so now a days we can resolve it by separating it
 import dotenv from "dotenv";
-import http from "http";
-import express from "express";
-import { DB_NAME}  from "./constants.js"
+// import http from "http";
+//import express from "express";
+//import { DB_NAME}  from "./constants.js"
 import connectDB from "./db/index.js";
-// import app from "../src/app.js";
+import { app } from "../src/app.js";
 
 dotenv.config({
   path: "./.env",
 });
- const app = express();
+
+//const app = express();
 
 connectDB()
   .then(() => {

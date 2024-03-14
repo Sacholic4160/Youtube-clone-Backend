@@ -1,9 +1,9 @@
 //here we create a method to check wether a user is loggein or they are authenticated or not!!
 
-import { ApiError } from "../utils/ApiError";
-import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 
 export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also use underscore(_) at the place of (res)
   try {
@@ -11,7 +11,8 @@ export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also u
 
     const token =
       req.cookie?.accessToken ||
-      req.header("Authorisation")?.replace("Bearer", " ");
+      req.header("Authorization")?.replace("Bearer ", "");
+console.log(token);
 
     if (!token) {
       throw new ApiError(401, "unauthorised request");
@@ -23,7 +24,7 @@ export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also u
 
     //after we can retrieve user from tokens if we found them without the password and refresh token because after logout we have to dlt them!!
 
-    const user = await User.findById(decodedToken?._id).select(" -password  -refreshToken");
+    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
 
     if(!user) {
         throw new ApiError(404, "Invalid user tokens");

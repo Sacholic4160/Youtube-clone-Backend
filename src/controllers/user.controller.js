@@ -4,12 +4,33 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 //import { v2 as cloudinary } from "cloudinary";
 
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    //we have designed a refresh tekon in our db schema so we have to save it there!
+    user.refreshToken = refreshToken;
+    // we have updated our user so now we have to save it in db
+
+    await user.save({ validateBeforeSave: false }); //validatebeforesave means that if db wants some validation on tokens then it save with out it!
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "something went wrong while generating the access and refresh tokens!"
+    );
+  }
+};
 const registerUser = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    message: "We are going in right direction",
-  });
+  // res.status(200).json({
+  //   message: "We are going in right direction",
+  // });
 
   //steps to register a user
   //1 get user details from frontend
@@ -41,6 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const existedUser = await User.findOne({
     $or: [{ userName }, { email }],
   });
+
   if (existedUser) {
     throw new ApiError(400, "user with this email already exist");
   }
@@ -61,7 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   //check if avatar exist or not
   if (!avatarLocalPath) {
-    throw new ApiError(404, "avatar is required");
+    throw new ApiError(404, "Avatar file is required");
   }
 
   //chech if coverImage exist or not
@@ -70,13 +92,13 @@ const registerUser = asyncHandler(async (req, res) => {
   // }
 
   //uploading the avatar and coverImage file on cloudinary
-  const avatar = uploadOnCloudinary(avatarLocalPath);
-  const coverImage = uploadOnCloudinary(coverImageLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   //checking if files uploaded on cloudinary or not
   if (!avatar) {
     throw new ApiError(
-      404,
+      400,
       "Problem in uploading the avatar file on cloudinary"
     );
   }
@@ -95,7 +117,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     avatar: avatar.url, //here we are taking url of avatar instead of using a file because with url we can access it thru cloudinary
-    coverImage: coverImage.url || "",
+    coverImage: coverImage?.url || "",
   });
 
   //after creating the user we have to remove the password and refreshToken
@@ -124,26 +146,7 @@ const registerUser = asyncHandler(async (req, res) => {
 //5 send tokens using cookies
 
 //4  using separate method to generate access and refresh tokens
-const generateAccessAndRefreshTokens = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
 
-    //we have designed a refresh tekon in our db schema so we have to save it there!
-    user.refreshToken = refreshToken;
-    // we have updated our user so now we have to save it in db
-
-    await user.save({ validateBeforeSave: false }); //validatebeforesave means that if db wants some validation on tokens then it save with out it!
-
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(
-      401,
-      "something went wrong while generating the access and refresh tokens!"
-    );
-  }
-};
 //1 making a wrap by a fxn loginuser with the help of asynchandler and taking user details from body using req.body
 const loginUser = asyncHandler(async (req, res) => {
   const { email, userName, password } = req.body;
@@ -159,7 +162,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = User.findOne({
     $or: [{ email }, { userName }],
   });
-
+  //console.log(user);
   if (!user) {
     throw new ApiError(404, "User does not exist , please sign up!");
   }
@@ -413,12 +416,11 @@ const updateUserAvatarFile = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select( "-password");
+  ).select("-password");
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Avatar file updated successfully"));
 });
-
 
 //update the cover image of the user
 
@@ -472,26 +474,145 @@ const updateUserCoverFile = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select( "-password");
+  ).select("-password");
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Cover file updated successfully"));
 });
 
 //here the use of this fxn is to take user profile and update their subscribers and no. they subscribedTo
-const getUserChannelProfile = asyncHandler( async (req,res) => {
-
+const getUserChannelProfile = asyncHandler(async (req, res) => {
   //take user's username  from req.params because thru params we can take the url of username
-  const { userName } = req.params
+  const { userName } = req.params;
 
   //check if username given is valid or not
-  if(!username)
-{
-  throw new ApiError(404, "Invalid username provided");
-}
-})
+  if (!userName) {
+    throw new ApiError(404, "Invalid username provided");
+  }
 
+  //now we will apply the aggregation pipelines like match, lookup, project ,addfields etc
 
+  const channel = await User.aggregate([
+    {
+      $match: {
+        userName: userName, //this is the first match pipeline we used to just match the username provided by the user to the db
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions", //from where we want to take our details because right now we are writting pipelines in user behalf
+        localField: "_id", //in our user model where we want to add that we are taking from foreign place
+        foreignField: "channel", //in other model from which field we have to take the details
+        as: "subscribers", //field ka naam kya rkhna hai
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers", //size is used to calculated all the documents name subscribers and move the no. to the field we have created
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        isSubscribed: {
+          $cond: {
+            //condition is used to check some situations which are boolean type using if/else/then
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            false: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        //project is used to check(1),uncheck(0) so that checked values are to be return
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1,
+      },
+    },
+  ]);
+
+  if (!(channel.length > 0)) {
+    //(!channel?.length)
+    throw new ApiError(400, "Channel does not exist");
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, channel[0], "User Profile fetched successfully")
+    );
+});
+
+//now we have to trach our watchhistory by using same pipelines
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+  // now with the help of aggregation pipelines first we take videos id from videos to watchhistory at users
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id), //here we have to use mongoose to get id of users as it does not provide the real id in aggregation by _id
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField:"watchHistory",
+        foreignField:"_id",
+        as:"watchHistory",
+
+        pipeline:[    //this pipeline we used because we got the history but there is a field in videos named owner which is empty so we have to retrieve it from users and inside the first lookup 
+        {
+          $lookup:{
+            from: "users",
+            localField:"owner",
+            foreignField:"_id",
+            as:"owner",
+            pipeline:[
+              {
+                $project :{
+                  fullName:1,
+                  userName:1,
+                  avatar:1
+                }
+              }
+            ]
+          }
+        },
+        {
+          $addFields:{
+            owner: {
+              $first:"$owner"  //this is to get the 0th index value of array(owner) and to overwrite the field owner with owner but content changed
+            }
+          }
+        }
+        
+        ]
+      },
+      
+    },
+  ]);
+
+  //send response
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(201,user[0].watchHistory,"watch history fetched successfully")
+  )
+});
 
 export {
   registerUser,
@@ -504,5 +625,5 @@ export {
   updateUserAvatarFile,
   updateUserCoverFile,
   getUserChannelProfile,
-
+  getUserWatchHistory,
 };
