@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
-import { v2 as cloudinary } from "cloudinary";
+//import { v2 as cloudinary } from "cloudinary";
 
 const registerUser = asyncHandler(async (req, res) => {
   res.status(200).json({
@@ -478,6 +478,21 @@ const updateUserCoverFile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Cover file updated successfully"));
 });
 
+//here the use of this fxn is to take user profile and update their subscribers and no. they subscribedTo
+const getUserChannelProfile = asyncHandler( async (req,res) => {
+
+  //take user's username  from req.params because thru params we can take the url of username
+  const { userName } = req.params
+
+  //check if username given is valid or not
+  if(!username)
+{
+  throw new ApiError(404, "Invalid username provided");
+}
+})
+
+
+
 export {
   registerUser,
   loginUser,
@@ -488,4 +503,6 @@ export {
   updateAccountDetails,
   updateUserAvatarFile,
   updateUserCoverFile,
+  getUserChannelProfile,
+
 };

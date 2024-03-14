@@ -1,12 +1,17 @@
 import { Router } from "express";
 import { loggedOutUser, loginUser, refreshAccessToken, registerUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 //route for registering a user
-
+// router.route("/").post( (req,res) => {
+//     res.status(200).json({
+//       message: "This is student get request",
+//     });
+//   });
+  
 router.route("/register").post(
     upload.fields([    //here we used fields instead of using an array because array takes multiple values inside it but we have to put multiple files at multiple places
     {
