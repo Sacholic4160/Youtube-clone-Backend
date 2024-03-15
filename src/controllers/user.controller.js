@@ -27,7 +27,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     );
   }
 };
-const registerUser = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => { 
   // res.status(200).json({
   //   message: "We are going in right direction",
   // });
@@ -59,12 +59,21 @@ const registerUser = asyncHandler(async (req, res) => {
   //3 check if user already exist or not
   //here we can use if else statements to check but there is an advanced method to check
 
-  const existedUser = await User.findOne({
-    $or: [{ userName }, { email }],
-  });
+  // const existedUser = await User.findOne({
+  //   $or: [{ userName }, { email }],
+  // });
+  let existedUserByEmail , existedUserByUserName;
 
-  if (existedUser) {
+  //checking db if this email already exist!
+  existedUserByEmail = await User.findOne({email});
+   if (existedUserByEmail) {
     throw new ApiError(400, "user with this email already exist");
+  }
+
+   //checking db if this username already exist!
+   existedUserByUserName = await User.findOne({userName});
+   if (existedUserByUserName) {
+    throw new ApiError(400, "user with this userName already exist");
   }
 
   //4 checking for images ,avatar, coverImage (local disk -> server(via multer) -> cloudinary)
@@ -154,14 +163,20 @@ const loginUser = asyncHandler(async (req, res) => {
   console.log(userName, email);
 
   //2   checking if email or username is valid or correct or not as per rules
-  if (!(email || userName)) {
+  if (!email && !userName) {              //!(email || userName)
     throw new ApiError(404, "userName and email required");
   }
 
   //3   checking if user is already a registered user
-  const user = User.findOne({
-    $or: [{ email }, { userName }],
-  });
+  // 
+  let user;
+
+  // Checking if user exists based on email or userName
+  if (email) {
+    user = await User.findOne({ email });
+  } else {
+    user = await User.findOne({ userName });
+  }
   //console.log(user);
   if (!user) {
     throw new ApiError(404, "User does not exist , please sign up!");
