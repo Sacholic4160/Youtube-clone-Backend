@@ -10,12 +10,12 @@ export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also u
     //here we using the try catch block retrieving the tokens from cookies or from header to replace it !!
 
     const token =
-      req.cookie?.accessToken ||
+      req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 console.log(token);
 
     if (!token) {
-      throw new ApiError(401, "unauthorised request");
+      throw new ApiError(401, "unauthorised request while accessing the token from cookie");
     }
 
     //cross checking the tokens using a inbuilt method of jwt with the secret token!!
@@ -35,6 +35,6 @@ console.log(token);
     next();
     
   } catch (error) {
-    throw new ApiError(401, "unauthorised request");
+    throw new ApiError(401, "unauthorised request while verifying the user");
   }
 });

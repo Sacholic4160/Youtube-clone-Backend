@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"; //cookie-parser is used so that we can perform CRUD(acess or set kr pau) operaions on cookies of users browser from our server
-import userRouter from "./routes/user.route.js";     //routes import
+import userRouter from "./routes/user.route.js";     //default user route import
+import videoRouter from "./routes/video.route.js";  //default video route import
 
 const app = express();
 
@@ -22,7 +23,7 @@ app.use(cookieParser());
 
 //here we are giving a route so that using this route we can make requests for various methods
 app.use("/api/v1/users", userRouter);  //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
-
+app.use("/api/v1/videos",videoRouter);
 
 
  export { app };
