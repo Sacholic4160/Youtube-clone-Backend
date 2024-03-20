@@ -10,7 +10,6 @@ const getChannelStats = asyncHandler(async(req,res) => {
     const { channel } = req.params;
     // Get the number of subscribers and videos, likes for a given channel
     
-let stats 
-
+    
     
 })
