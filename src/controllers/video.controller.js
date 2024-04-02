@@ -102,12 +102,12 @@ const publishVideo = asyncHandler(async (req, res) => {
   }
 
   //check if the video is not uploaded due to some reasons!!
-  if (!uploadedThumbnail) {
-    throw new ApiError(
-      404,
-      "something error occured while uploading the thumbnail on cloudinary"
-    );
-  }
+  // if (!uploadedThumbnail) {
+  //   throw new ApiError(
+  //     404,
+  //     "something error occured while uploading the thumbnail on cloudinary"
+  //   );
+  // }
 
   //now we will create a video file in db by using the Video model exported!!
   const video = await Video.create({

@@ -6,12 +6,13 @@ import { User } from "../models/user.model.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-  const { channel } = req.params;
+  const  _id = req.params.channelId;
+
 
   //checking if channel id is valid or not!!
-  if (!isValidObjectId(channel)) {
+  if (!isValidObjectId(_id)) {
     throw new ApiError(404, "Invalid Channel ID");
   }
+   
 
-  
 });
