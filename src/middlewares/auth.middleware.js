@@ -12,11 +12,12 @@ export const verifyJWT = asyncHandler(async (req,res ,next) => { //we can also u
     const token =
       req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
-console.log(token);
 
     if (!token) {
       throw new ApiError(401, "unauthorised request while accessing the token from cookie");
     }
+    console.log(token);
+
 
     //cross checking the tokens using a inbuilt method of jwt with the secret token!!
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -35,6 +36,9 @@ console.log(token);
     next();
     
   } catch (error) {
-    throw new ApiError(401, "unauthorised request while verifying the user");
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+      throw new ApiError(401, "Unauthorised request while verifying the user");
+    }
+    throw error;
   }
 });
