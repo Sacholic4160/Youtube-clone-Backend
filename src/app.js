@@ -20,6 +20,18 @@ app.use(express.urlencoded({ extended: true, limit: "20kb" })); // this is also 
 app.use(express.static("public")); //here static means any files/pdf or anything we want to save in our local system so that we can acess it locally so in public folder it will be kept
 app.use(cookieParser());
 
+//checking if cookie is enabled or not!
+
+app.get("/check-cookies", (req, res) => {
+  const cookies =  req.cookies?.accessToken;
+  console.log(cookies);
+  if (cookies && Object.keys(cookies).length > 0) {
+    res.send("Cookies are enabled");
+  } else {
+    res.send("Cookies are disabled");
+  }
+});
+
 //here we are giving a route so that using this route we can make requests for various methods
 app.use("/api/v1/users", userRouter); //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 app.use("/api/v1/videos", videoRouter);

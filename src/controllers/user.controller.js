@@ -208,6 +208,9 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  //checking if cookie is enabled or not?
+  // const isCookieEnabled = navigator.cookieEnabled;
+  //     console.log(isCookieEnabled);
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
