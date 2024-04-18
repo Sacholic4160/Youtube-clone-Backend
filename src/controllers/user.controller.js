@@ -27,7 +27,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     );
   }
 };
-const registerUser = asyncHandler(async (req, res) => { 
+const registerUser = asyncHandler(async (req, res) => {
   // res.status(200).json({
   //   message: "We are going in right direction",
   // });
@@ -62,17 +62,17 @@ const registerUser = asyncHandler(async (req, res) => {
   // const existedUser = await User.findOne({
   //   $or: [{ userName }, { email }],
   // });
-  let existedUserByEmail , existedUserByUserName;
+  let existedUserByEmail, existedUserByUserName;
 
   //checking db if this email already exist!
-  existedUserByEmail = await User.findOne({email});
-   if (existedUserByEmail) {
+  existedUserByEmail = await User.findOne({ email });
+  if (existedUserByEmail) {
     throw new ApiError(400, "user with this email already exist");
   }
 
-   //checking db if this username already exist!
-   existedUserByUserName = await User.findOne({userName});
-   if (existedUserByUserName) {
+  //checking db if this username already exist!
+  existedUserByUserName = await User.findOne({ userName });
+  if (existedUserByUserName) {
     throw new ApiError(400, "user with this userName already exist");
   }
 
@@ -163,12 +163,13 @@ const loginUser = asyncHandler(async (req, res) => {
   console.log(userName, email);
 
   //2   checking if email or username is valid or correct or not as per rules
-  if (!email && !userName) {              //!(email || userName)
+  if (!email && !userName) {
+    //!(email || userName)
     throw new ApiError(404, "userName and email required");
   }
 
   //3   checking if user is already a registered user
-  // 
+  //
   let user;
 
   // Checking if user exists based on email or userName
@@ -588,48 +589,51 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
     {
       $lookup: {
         from: "videos",
-        localField:"watchHistory",
-        foreignField:"_id",
-        as:"watchHistory",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
 
-        pipeline:[    //this pipeline we used because we got the history but there is a field in videos named owner which is empty so we have to retrieve it from users and inside the first lookup 
-        {
-          $lookup:{
-            from: "users",
-            localField:"owner",
-            foreignField:"_id",
-            as:"owner",
-            pipeline:[
-              {
-                $project :{
-                  fullName:1,
-                  userName:1,
-                  avatar:1
-                }
-              }
-            ]
-          }
-        },
-        {
-          $addFields:{
-            owner: {
-              $first:"$owner"  //this is to get the 0th index value of array(owner) and to overwrite the field owner with owner but content changed
-            }
-          }
-        }
-        
-        ]
+        pipeline: [
+          //this pipeline we used because we got the history but there is a field in videos named owner which is empty so we have to retrieve it from users and inside the first lookup
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    userName: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner", //this is to get the 0th index value of array(owner) and to overwrite the field owner with owner but content changed
+              },
+            },
+          },
+        ],
       },
-      
     },
   ]);
 
   //send response
   return res
-  .status(200)
-  .json(
-    new ApiResponse(201,user[0].watchHistory,"watch history fetched successfully")
-  )
+    .status(200)
+    .json(
+      new ApiResponse(
+        201,
+        user[0].watchHistory,
+        "watch history fetched successfully"
+      )
+    );
 });
 
 export {

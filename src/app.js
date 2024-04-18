@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser"; //cookie-parser is used so that we can
 import userRouter from "./routes/user.route.js"; //default user route import
 import videoRouter from "./routes/video.route.js"; //default video route import
 import subsRouter from "./routes/subscription.route.js"; //default subscription route import
+import dashboardRouter from "./routes/dashboard.route.js";
 
 const app = express();
 
@@ -23,7 +24,7 @@ app.use(cookieParser());
 //checking if cookie is enabled or not!
 
 app.get("/check-cookies", (req, res) => {
-  const cookies =  req.cookies?.accessToken;
+  const cookies = req.cookies?.accessToken;
   console.log(cookies);
   if (cookies && Object.keys(cookies).length > 0) {
     res.send("Cookies are enabled");
@@ -36,6 +37,7 @@ app.get("/check-cookies", (req, res) => {
 app.use("/api/v1/users", userRouter); //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/subscriptions", subsRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
 export { app };
 

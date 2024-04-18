@@ -6,7 +6,6 @@ import { diskStorage } from "multer";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
- 
 
 //firstly we will write all the steps/functions we have to make
 //1 retrieving/getting all videos or one
@@ -125,10 +124,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
   // } now we will directly use pagination while finding video
 
   // Check if query is a non-empty string
-  if (typeof query !== 'string' || query.trim() === '') {
-    return res.status(400).json(new ApiResponse(400, "Invalid query parameter"));
+  if (typeof query !== "string" || query.trim() === "") {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "Invalid query parameter"));
   }
-
 
   //get the user from cookies
   const user = await User.find({ refreshToken: req.cookies?.refreshToken });
@@ -164,20 +164,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
           localField: "_id",
           foreignField: "video",
           as: "likes",
-        }
-     },
-    //  {
-    //   $lookup: {
-    //     from: "Comment",
-    //     localField: "_id",
-    //     foreignField: "video",
-    //     as: "comments",
-    //   }
-    //  },
+        },
+      },
+      //  {
+      //   $lookup: {
+      //     from: "Comment",
+      //     localField: "_id",
+      //     foreignField: "video",
+      //     as: "comments",
+      //   }
+      //  },
       {
         $addFields: {
           likes: { $size: "$likes" },
-         //  comments: {$size: "$comments" },
+          //  comments: {$size: "$comments" },
         },
       },
       {
@@ -194,7 +194,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
           createdAt: 1,
           updatedAt: 1,
           likes: 1,
-         // comments: 1,
+          // comments: 1,
         },
       },
       { $sort: { [sortBy]: sortType === "asc" ? 1 : -1 } },
