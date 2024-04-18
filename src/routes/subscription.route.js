@@ -1,14 +1,17 @@
-import { toggleSubscription ,getUserChannelSubscribers} from "../controllers/subscription.controller.js";
+import { toggleSubscription ,getUserChannelSubscribers,getUserSubscribedChannels} from "../controllers/subscription.controller.js";
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
+//all the routes will use verify jwt middleware
+router.use(verifyJWT);
 //route to toggle the subscription
 router
-  .route("/toggleSubscription/:channelId/:userId")
-  .patch(/*verifyJWT,*/ toggleSubscription);
+  .route("/c/:channelId")
+  .get(getUserChannelSubscribers)
+  .post( toggleSubscription);
 
   //router to get the list of all the subscribers
-  router.route( "/getAllSubscribers/:channelId").get(/*verifyJWT,*/ getUserChannelSubscribers)
+ router.route("/u/:subscriberId").get(getUserSubscribedChannels);
 export default router;

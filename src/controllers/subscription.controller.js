@@ -5,89 +5,126 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
+
 const toggleSubscription = asyncHandler(async (req, res) => {
-  try {
-    //const _id = req.params.channelId;
-    const { channelId, userId } = req.params;
-    console.log(`channelId : ${channelId} and  userId:${userId}`);
-
-    //checking if channel id is valid or not!!
-    if (!isValidObjectId(channelId)) {
-      throw new ApiError(404, "Invalid Channel ID");
-    }
-    //checking if user id is valid or not!!
-    if (!isValidObjectId(userId)) {
-      throw new ApiError(404, "Invalid user ID");
-    }
-    //checking if the user is not subscribing from its own channel!!
-    if (channelId == userId) {
-      throw new ApiError(400, "You cannot subscribe to your own channel!");
-    }
-    // // Check if a user object exists directly in the req object
-    // if (!req.user) {
-    //   throw new ApiError(401, "Unauthorized request");
-    // }
-    // console.log(req.user);
-    // const user = await User.findById(req.user?._id);
-    // console.log(user);
-
-    // if (!user) {
-    //   throw new ApiError(400, "user not found of specified id!");
-    // }
-
-    //find the user if he subscribed to the channel or not!
-    const subscription = await Subscription.findOne({
-      subscriber: userId,
-      channel: channelId,
-    });
-    console.log(`data of subscription : ${subscription}`);
-    let method = "";
-
-    if (!subscription) {
-      method = "create";
-      const newSubscription = await Subscription.create({
-        subscriber: userId,
-        channel: channelId,
-      });
-      console.log(`data of new subscription : ${newSubscription}`);
-      return res
-        .status(201)
-        .json(
-          new ApiResponse(201, newSubscription, "Subscribed to the channel")
-        );
-    } else {
-      method = "deleteOne";
-      await Subscription.findByIdAndDelete(userId);
-      return res
-        .status(201)
-        .json(new ApiResponse(201, null, "Unsubscribed Successfully!"));
-    }
-  } catch (error) {
-    console.error(error);
-    //return next(error);
+  const {channelId} = req.params
+  if(!isValidObjectId(channelId)){
+      throw new ApiError(400,"Cannot find the channel")
   }
-});
+
+  const channel=await User.findById(channelId) //channel is also user
+  if(!channel){
+      throw new ApiError(404,"Channel does not exist")
+  }
+
+  const user = await User.findOne({
+      refreshToken: req.cookies.refreshToken,
+  })
+  if (!user) {
+      throw new ApiError(404, "Subscriber not found")
+  }
+
+
+  const userSub=await Subscription.findOne({
+      subscriber: user._id,
+      channel: channelId,
+  });
+
+  //if user is subscribed- unsubscribe 
+  if(userSub){
+      const unsubscribe= await Subscription.findOneAndDelete(
+          {
+              subscriber: user._id,
+              channel: channel._id
+          }
+      )
+
+      if (!unsubscribe) {
+          throw new ApiError(500, "Something went wrong while unsubscribing ");
+      }
+
+      return(
+          res
+          .status(200)
+          .json(new ApiResponse(200,unsubscribe,"User unsubscribed"))
+      )
+  }
+
+  //else subscribe the channel
+  if(!userSub){
+      const subscribe=await Subscription.create(
+          {
+              subscriber: user._id,
+              channel: channel._id
+          }
+      )
+      if (!subscribe) {
+          throw new ApiError(500,"Error while subscribing the channel")
+      }
+      return(
+          res
+          .status(200)
+          .json(new ApiResponse(200,subscribe,"User subscribed"))
+      )
+      
+  }
+})
 
 //get all the subscribers list for a specific channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-  const id = req.params.channelId;
+  const {channelId} = req.params;
 
-  if (!isValidObjectId(id)) {
+  if (!isValidObjectId(channelId)) {
     throw new ApiError(404, "Invalid Channel ID!");
   }
 
-  const channel = await Subscription.findById(id).populate("subscriber");
-
+  //find channel using User because channel is also an user
+  const channel = await User.findById(channelId)
   if (!channel) {
-    throw new ApiError(400, "channel with specified id does not exist!!");
+    throw new ApiError(404, "channel with specified id does not exist!!");
   }
-   
-  let subscribers = {}
-  subscribers = channel.subscriber;
-  subscribers.select(["-password -refreshToken"]);
+  console.log(channel);
+     
+  //get subscribers
+  const subscribers = await Subscription.find({
+    channel:channel?._id
+  }).populate("subscriber")
+  console.log(subscribers)
 
-  return res
+  //count the documents name subscriber
+  const countSubscriber = await Subscription.countDocuments({
+    channel:channelId
+  })
+console.log(countSubscriber)
+
+  //returning the response
+  return(
+    res
     .status(200)
-    .json(new ApiResponse(200, subscribers, "list fetched successfully!!"));
+    .json(new ApiResponse(200,{countSubscriber,subscribers},"Subscribers retrieved successfully"))
+)
 });
-export { toggleSubscription, getUserChannelSubscribers };
+
+//get all the channels to which user had subscribed
+const getUserSubscribedChannels = asyncHandler(async(req,res) => {
+  const {subscriberId} = req.params;
+
+   if(!isValidObjectId(subscriberId)){
+    throw new ApiError(401,"Invalid subscriber ID!")
+   }
+
+   const subscriptions = await Subscription.find({
+    subscriber:subscriberId
+   }).populate("channel")
+
+   const  countSubscriptions = await Subscription.countDocuments({
+    subscriber:subscriberId
+   })
+
+   return(
+    res
+    .status(200)
+    .json(new ApiResponse(200,{countSubscriptions,subscriptions},"Subscribed channels fetched successfully"))
+)
+})
+export { toggleSubscription, getUserChannelSubscribers,getUserSubscribedChannels };

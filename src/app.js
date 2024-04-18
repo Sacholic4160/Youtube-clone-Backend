@@ -35,7 +35,7 @@ app.get("/check-cookies", (req, res) => {
 //here we are giving a route so that using this route we can make requests for various methods
 app.use("/api/v1/users", userRouter); //routes declaration (here we cannot use app.get because here we have to ue midlleware or to configure something)
 app.use("/api/v1/videos", videoRouter);
-app.use("/api/v1/subs", subsRouter);
+app.use("/api/v1/subscriptions", subsRouter);
 
 export { app };
 

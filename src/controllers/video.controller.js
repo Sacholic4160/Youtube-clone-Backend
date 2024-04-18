@@ -6,7 +6,7 @@ import { diskStorage } from "multer";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
-import jwt from "jsonwebtoken";
+ 
 
 //firstly we will write all the steps/functions we have to make
 //1 retrieving/getting all videos or one
@@ -32,6 +32,15 @@ const publishVideo = asyncHandler(async (req, res) => {
   }
 
   //take video and thumbnail path from req.files
+  // console.log(req.files);
+  // console.log(req.files.videoFile)
+  // console.log(req.files.videoFile[0])
+  // console.log(req.files.videoFile.path)
+  // console.log(req.files.videoFile[0].path)
+  // console.log(req.files.thumbnail)
+  // console.log(req.files.thumbnail[0])
+  // console.log(req.files.thumbnail.path)
+  // console.log(req.files.thumbnail[0].path)
   const videoLocalPath = req.files?.videoFile[0]?.path;
   const thumbnailLocalPath = req.files?.thumbnail[0]?.path;
 
@@ -60,6 +69,8 @@ const publishVideo = asyncHandler(async (req, res) => {
     );
   }
 
+  console.log("Video and thumbnail uploaded on cloudinary");
+
   //check if the video is not uploaded due to some reasons!!
   // if (!uploadedThumbnail) {
   //   throw new ApiError(
@@ -84,7 +95,7 @@ const publishVideo = asyncHandler(async (req, res) => {
   //now its time to return the api response!!
   return res
     .status(200)
-    .json(new ApiResponse(201, video, "Video Uploaded Successfully!!"));
+    .json(new ApiResponse(200, video, "Video Uploaded Successfully!!"));
 });
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -112,6 +123,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
   // let options = {
 
   // } now we will directly use pagination while finding video
+
+  // Check if query is a non-empty string
+  if (typeof query !== 'string' || query.trim() === '') {
+    return res.status(400).json(new ApiResponse(400, "Invalid query parameter"));
+  }
+
+
   //get the user from cookies
   const user = await User.find({ refreshToken: req.cookies?.refreshToken });
 
@@ -146,18 +164,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
           localField: "_id",
           foreignField: "video",
           as: "likes",
-        },
-        $lookup: {
-          from: "Comment",
-          localField: "_id",
-          foreignField: "video",
-          as: "comments",
-        },
-      },
+        }
+     },
+    //  {
+    //   $lookup: {
+    //     from: "Comment",
+    //     localField: "_id",
+    //     foreignField: "video",
+    //     as: "comments",
+    //   }
+    //  },
       {
         $addFields: {
           likes: { $size: "$likes" },
-          comments: { $size: "$comments" },
+         //  comments: {$size: "$comments" },
         },
       },
       {
@@ -174,7 +194,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
           createdAt: 1,
           updatedAt: 1,
           likes: 1,
-          comments: 1,
+         // comments: 1,
         },
       },
       { $sort: { [sortBy]: sortType === "asc" ? 1 : -1 } },

@@ -14,14 +14,11 @@ const router = Router();
 
 //here we have to use verifyJWT for all the methods because a loggedin user can only perform these processes and we
 // use here is (use) keyword because it is a middleware!!
-router.use(verifyJWT);
+//router.use(verifyJWT);
 
-//1.  here is the first router we are writting in video router to get all the videos of a specified user!!
-router.route("/getAll-videos").get(getAllVideos);
-
-//2. the second one is to upload a video thru multer and then finally on cloudinary and we have to upload a video thru it so we have used
+//1.  the second one is to upload a video thru multer and then finally on cloudinary and we have to upload a video thru it so we have used
 // upload.fields for uploading videos and thumbnails method in post before writting of the publish method !!!!
-router.route("/publish-video").post(
+router.route("/publish-video").post(verifyJWT,
   upload.fields([
     {
       name: "videoFile",
@@ -33,20 +30,23 @@ router.route("/publish-video").post(
     },
   ]),
   publishVideo
-);
+);                                                                                                                                                                    
+//2.    here is the first router we are writting in video router to get all the videos of a specified user!!
+router.route("/getAll-videos").get(getAllVideos);
+
 
 //3 this route is for getting a video by its id !!
-router.route("/:by-id").get(getVideoById);
+router.route("/:videoId").get(verifyJWT,getVideoById);
 
 //4 this route is for updating a video by its id!!
 router
-  .route("/:updateby-id")
-  .patch(upload.single("thumbnail"), updateVideoById);
+  .route("/update-video/:videoId")
+  .patch(verifyJWT,upload.single("thumbnail"), updateVideoById);
 
 //5 this route is for deleting a video by its id!!
-router.route("/:delete-video").delete(deleteVideoById);
+router.route("/delete-video/:videoId").delete(verifyJWT,deleteVideoById);
 
 //6 this route is for toggling a video by its id!!
-router.route("/:toggle-video").patch(togglePublishVideo)
+router.route("/:toggle-video/:videoId").patch(verifyJWT,togglePublishVideo)
 //export router from here as default because we can name it anything in our app.js
 export default router;
