@@ -5,6 +5,7 @@ import userRouter from "./routes/user.route.js"; //default user route import
 import videoRouter from "./routes/video.route.js"; //default video route import
 import subsRouter from "./routes/subscription.route.js"; //default subscription route import
 import dashboardRouter from "./routes/dashboard.route.js";
+import tweetRouter from "./routes/tweet.route.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/v1/users", userRouter); //routes declaration (here we cannot use a
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/subscriptions", subsRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/tweet", tweetRouter);
 
 export { app };
 

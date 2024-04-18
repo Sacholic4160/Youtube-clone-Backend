@@ -3,11 +3,11 @@ import mongoose, { Mongoose, Schema } from "mongoose";
 
 const tweetSchema = new Schema(
   {
-    contentTweet: {
+    content: {
       type: String,
       required: true,
     },
-    tweetBy: {
+    owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
