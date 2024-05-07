@@ -9,7 +9,6 @@ import { isValidObjectId } from "mongoose";
 import { Types } from "mongoose";
 const { ObjectId } = Types;
 
-
 const createTweet = asyncHandler(async (req, res) => {
   //take content of tweet from req.body and user from refreshToken
   const { content } = req.body;
@@ -32,7 +31,9 @@ const createTweet = asyncHandler(async (req, res) => {
     owner: user?._id,
   });
 
-  return res.status(200).json(200, tweet, "tweet created successfully!!");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweet, "tweet created successfully!!"));
 });
 
 const getUserTweets = asyncHandler(async (req, res) => {
@@ -42,20 +43,19 @@ const getUserTweets = asyncHandler(async (req, res) => {
   if (!userId) {
     throw new ApiError(400, "userId not found!!");
   }
-  
-  if(!isValidObjectId(user_id)){
-    throw new ApiError(400, "userId provided is invalid!")
+
+  if (!isValidObjectId(user_id)) {
+    throw new ApiError(400, "userId provided is invalid!");
   }
 
   const tweets = await Tweet.find({ owner: user_id });
 
   return res
     .status(200)
-    .json({ message: "User tweets fetched successfully!!", tweets });
+    .json(
+      new ApiResponse({ message: "User tweets fetched successfully!!", tweets })
+    );
 });
-
-
-
 
 const updateTweet = asyncHandler(async (req, res) => {
   // Take tweetId from req.params
@@ -83,13 +83,13 @@ const updateTweet = asyncHandler(async (req, res) => {
     tweet.content = content;
     await tweet.save({ validateBeforeSave: false });
 
-    return res.status(200).json({ message: "Tweet updated successfully!", tweet });
+    return res
+      .status(200)
+      .json(new ApiResponse({ message: "Tweet updated successfully!", tweet }));
   } else {
     throw new ApiError(400, "only the user can update the tweet!");
   }
 });
-
-
 
 const deleteTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
