@@ -78,7 +78,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //4 checking for images ,avatar, coverImage (local disk -> server(via multer) -> cloudinary)
   //for files to upload we have to use req.files instead of req.body
-  const avatarLocalPath = req.files?.avatar[0]?.path; //here we have to extract the first property of avatar so wee used it as an array to get its path
+  const avatarLocalPath = req.files?.avatar[0].path; //here we have to extract the first property of avatar so wee used it as an array to get its path
   // const coverImagePath = req.files?.coverImage[0]?.path;
 
   //check if coverImage exist or not
