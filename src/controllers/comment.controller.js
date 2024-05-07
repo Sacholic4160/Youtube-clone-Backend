@@ -203,9 +203,4 @@ const deleteComment = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = {
-  getVideoComments,
-  addComment,
-  updateComment,
-  deleteComment,
-};
+export { getVideoComments, addComment, updateComment, deleteComment };
