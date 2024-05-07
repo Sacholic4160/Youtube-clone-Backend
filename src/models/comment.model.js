@@ -10,7 +10,7 @@ const commentSchema = new Schema(
       type: String,
       required: true,
     },
-    commentBy: {
+    owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

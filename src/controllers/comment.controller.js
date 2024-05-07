@@ -1,9 +1,8 @@
 import { Comment } from "../models/comment.model.js";
 import { Video } from "../models/video.model.js";
-import { Tweet } from "../models/tweet.model.js";
 import { User } from "../models/user.model.js";
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiError } from "../utils/ApiError";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
@@ -46,7 +45,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
       {
         $lookup: {
           from: "users",
-          localField: "commentBy",
+          localField: "owner",
           foreignField: "_id",
           as: "user",
         },
@@ -138,38 +137,41 @@ const updateComment = asyncHandler(async (req, res) => {
 
   // Check if commentId is a valid ObjectId
   if (!mongoose.isValidObjectId(commentId)) {
-    throw new ApiError(400, "Invalid video Id");
+    throw new ApiError(400, "Invalid comment Id");
   }
 
-  const user = await User.findOne({
-    refreshToken: req.cookies.refreshToken,
-  });
+  // Find the user based on refreshToken
+  const user = await User.findOne({ refreshToken: req.cookies.refreshToken });
 
   if (!user) {
-    throw new ApiError(400, "user not found!");
+    throw new ApiError(400, "User not found!");
   }
 
+  // Find the comment by its ID
   const comment = await Comment.findById(commentId);
 
   if (!comment) {
-    throw new ApiError(400, "comment not founnd of given id");
+    throw new ApiError(400, "Comment not found");
   }
 
-  if (comment?.commentBy.equals(user._id.toString())) {
-    const { content } = req.body;
-
-    if (!content) {
-      throw new ApiError(400, "content not found!");
-    }
-    comment.content = content;
-    await comment.save({ validateBeforeSave: false });
-
-    return res
-      .status(201)
-      .json(new ApiResponse("comment updated successfully!!", comment));
-  } else {
-    throw new ApiError(400, "only the owner can update the comment!");
+  // Check if the comment owner is the same as the current user
+  if (!comment.owner || !comment.owner.equals(user._id)) {
+    throw new ApiError(403, "You are not allowed to update this comment");
   }
+
+  // Update the comment content
+  const { content } = req.body;
+
+  if (!content) {
+    throw new ApiError(400, "Content not found!");
+  }
+
+  comment.content = content;
+  await comment.save({ validateBeforeSave: false });
+
+  return res
+    .status(201)
+    .json(new ApiResponse("Comment updated successfully", comment));
 });
 
 //delete a comment
@@ -193,7 +195,7 @@ const deleteComment = asyncHandler(async (req, res) => {
   if (!comment) {
     throw new ApiError(400, "comment not found!!");
   }
-  if (comment?.commentBy.equals(user._id.toString())) {
+  if (comment?.owner.equals(user._id.toString())) {
     await comment.remove();
     return res
       .status(201)
